@@ -124,6 +124,9 @@
                                                 <option value="Coffee" <?php if ($typeName == 'Coffee') echo 'selected'; ?>>Coffee</option>
                                                 <option value="Pastry" <?php if ($typeName == 'Pastry') echo 'selected'; ?>>Pastry</option>
                                                 <option value="Cakes" <?php if ($typeName == 'Cakes') echo 'selected'; ?>>Cakes</option>
+                                                <option value="Cakes" <?php if ($typeName == 'Popular') echo 'selected'; ?>>Popular</option>
+                                                <option value="Cakes" <?php if ($typeName == 'Latest Product') echo 'selected'; ?>>Latest Product</option>
+                                                
                                             </select>
                                         </div>
                                         <div class="mb-3">
