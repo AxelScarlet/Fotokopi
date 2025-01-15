@@ -32,33 +32,33 @@
     </div>
 
     <div class="container">
-            <!-- Search form -->
-            <form action="" method="POST">
-                <div class="row">
-                    <div class="col-md-3">
+        <!-- Search form -->
+        <form action="" method="POST">
+            <div class="row">
+                <div class="col-md-3">
                     <div class="input-group">
                         <input type="text" name="orderID" placeholder="Search Order ID" class="form-control">
                         <button type="submit" name="search" class="btn btn-dark">Search</button>
                     </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <br>
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <a href="manageOrder.php" class="btn btn-dark">Reload Table</a>
-                </div>
-                <div>
-                    <button class="btn btn-dark me-2" onclick="sortTable(true)">Sort Oldest Order</button>
-                    <button class="btn btn-dark" onclick="sortTable(false)">Sort Latest Order</button>
                 </div>
             </div>
+        </form>
+    </div>
+    <br>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <a href="manageOrder.php" class="btn btn-dark">Reload Table</a>
+            </div>
+            <div>
+                <button class="btn btn-dark me-2" onclick="sortTable(true)">Sort Oldest Order</button>
+                <button class="btn btn-dark" onclick="sortTable(false)">Sort Latest Order</button>
+            </div>
         </div>
+    </div>
     <br>
 
-    
+
     <table class="table table-striped">
         <thead class="table-dark">
             <tr>
@@ -68,6 +68,7 @@
                 <th class="text-center">Date</th>
                 <th class="text-center">Eat Option</th>
                 <th class="text-center">Payment Method</th>
+                <th class="text-center">Grand Total</th>
                 <th class="text-center">Status</th>
                 <th class="text-center">Actions</th>
             </tr>
@@ -78,7 +79,7 @@
             if (isset($_POST['search'])) {
                 // Get the input value from the textbox
                 $searchOrderID = $_POST['orderID'];
-                
+
                 // Query to get the specific order based on the orderID
                 $sql = "SELECT * FROM orderMenu WHERE orderID = '$searchOrderID'";
                 // Execute the query
@@ -92,12 +93,13 @@
                         while ($rows = mysqli_fetch_assoc($res)) {
                             // Get data from the database
                             $id = $rows['orderID'];
-                            $custID = $rows['custID']; 
+                            $custID = $rows['custID'];
                             $orderAddress = $rows['orderAddress'];
                             $orderDate = $rows['orderDate'];
                             $eatOption = $rows['eatOption'];
                             $paymentMethod = $rows['paymentMethod'];
                             $orderStatus = $rows['orderStatus'];
+                            $grandTotal = $rows['grandTotal'];
 
                             // Display the values in our table
                             ?>
@@ -107,11 +109,12 @@
                                 <td><?php echo !empty($orderAddress) ? $orderAddress : "none"; ?></td>
                                 <td class="text-center"><?php echo $orderDate; ?></td>
                                 <td class="text-center"><?php echo $eatOption; ?></td>
-                                <td><?php echo $paymentMethod; ?></td>              
+                                <td><?php echo $paymentMethod; ?></td>
+                                <td><?php echo $grandTotal; ?></td>
                                 <td class="text-center">
                                     <?php
                                     $statusClass = ""; // Variable to store the Bootstrap class for status button color
-
+                    
                                     // Determine the Bootstrap class based on the order status
                                     switch ($orderStatus) {
                                         case "In Process":
@@ -126,6 +129,12 @@
                                         case "Order Cancelled":
                                             $statusClass = "btn btn-danger"; // Red color for "Order Cancelled"
                                             break;
+                                        case "Refund Requested":
+                                            $statusClass = "btn btn-warning"; // Orange color for "Refund Requested"
+                                            break;
+                                        case "Refund Request Accepted":
+                                            $statusClass = "btn btn-success"; // Green color for "Refund Request Accepted"
+                                            break;
                                         default:
                                             $statusClass = "btn btn-secondary"; // Default color for other statuses
                                             break;
@@ -135,19 +144,32 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center">
-                                        <a href="<?php echo SITEURL; ?>Staff_Page/viewCart.php?id=<?php echo $id; ?>" class="btn btn-warning me-2">View <br>Cart</a>
+                                        <a href="<?php echo SITEURL; ?>Staff_Page/viewCart.php?id=<?php echo $id; ?>"
+                                            class="btn btn-warning me-2">View <br>Cart</a>
                                         <div class="dropdown">
-                                            <button class="btn btn-success dropdown-toggle me-2" data-bs-toggle="dropdown">Update <br>Status</button>
+                                            <button class="btn btn-success dropdown-toggle me-2" data-bs-toggle="dropdown">Update
+                                                <br>Status</button>
                                             <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="updateStatus1.php?id=<?php echo $id?>">In Process</a></li>
-                                                <li><a class="dropdown-item" href="updateStatus3.php?id=<?php echo $id?>">Order Received</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="updateStatus1.php?id=<?php echo $id ?>">In
+                                                        Process</a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="updateStatus3.php?id=<?php echo $id ?>">Order
+                                                        Received</a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="updateStatus4.php?id=<?php echo $id ?>">Accept Refund
+                                                        Request</a>
+                                                </li>
                                             </ul>
                                         </div>
-                                        <a href="<?php echo SITEURL; ?>Staff_Page/cancelOrder.php?id=<?php echo $id; ?>" class="btn btn-danger">Cancel <br> Order</a>
+                                        <a href="<?php echo SITEURL; ?>Staff_Page/cancelOrder.php?id=<?php echo $id; ?>"
+                                            class="btn btn-danger">Cancel <br> Order</a>
                                     </div>
                                 </td>
                             </tr>
-                <?php
+                            <?php
                         }
                     } else {
                         // No order found
@@ -168,12 +190,13 @@
                         while ($rows = mysqli_fetch_assoc($res)) {
                             // Get data from the database
                             $id = $rows['orderID'];
-                            $custID = $rows['custID']; 
+                            $custID = $rows['custID'];
                             $orderAddress = $rows['orderAddress'];
                             $orderDate = $rows['orderDate'];
                             $eatOption = $rows['eatOption'];
                             $paymentMethod = $rows['paymentMethod'];
                             $orderStatus = $rows['orderStatus'];
+                            $grandTotal = $rows['grandTotal'];
 
                             // Display the values in our table
                             ?>
@@ -183,11 +206,12 @@
                                 <td><?php echo !empty($orderAddress) ? $orderAddress : "none"; ?></td>
                                 <td class="text-center"><?php echo $orderDate; ?></td>
                                 <td class="text-center"><?php echo $eatOption; ?></td>
-                                <td><?php echo $paymentMethod; ?></td>              
+                                <td><?php echo $paymentMethod; ?></td>
+                                <td><?php echo $grandTotal; ?></td>
                                 <td class="text-center">
                                     <?php
                                     $statusClass = ""; // Variable to store the Bootstrap class for status button color
-
+                    
                                     // Determine the Bootstrap class based on the order status
                                     switch ($orderStatus) {
                                         case "In Process":
@@ -202,6 +226,12 @@
                                         case "Order Cancelled":
                                             $statusClass = "btn btn-danger"; // Red color for "Order Cancelled"
                                             break;
+                                        case "Refund Requested":
+                                            $statusClass = "btn btn-warning"; // Orange color for "Refund Requested"
+                                            break;
+                                        case "Refund Request Accepted":
+                                            $statusClass = "btn btn-success"; // Green color for "Refund Request Accepted"
+                                            break;
                                         default:
                                             $statusClass = "btn btn-secondary"; // Default color for other statuses
                                             break;
@@ -211,20 +241,32 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center">
-                                        <a href="<?php echo SITEURL; ?>Staff_Page/viewCart.php?id=<?php echo $id; ?>" class="btn btn-warning me-2">View <br>Cart</a>
+                                        <a href="<?php echo SITEURL; ?>Staff_Page/viewCart.php?id=<?php echo $id; ?>"
+                                            class="btn btn-warning me-2">View <br>Cart</a>
                                         <div class="dropdown">
-                                            <button class="btn btn-success dropdown-toggle me-2" data-bs-toggle="dropdown">Update <br>Status</button>
+                                            <button class="btn btn-success dropdown-toggle me-2" data-bs-toggle="dropdown">Update
+                                                <br>Status</button>
                                             <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="updateStatus1.php?id=<?php echo $id?>">In Process</a></li>
-                                                <li><a class="dropdown-item" href="updateStatus2.php?id=<?php echo $id?>">Delivering</a></li>
-                                                <li><a class="dropdown-item" href="updateStatus3.php?id=<?php echo $id?>">Order Received</a></li>
+                                                <li><a class="dropdown-item" href="updateStatus1.php?id=<?php echo $id ?>">In
+                                                        Process</a>
+                                                </li>
+                                                <li><a class="dropdown-item"
+                                                        href="updateStatus2.php?id=<?php echo $id ?>">Delivering</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="updateStatus3.php?id=<?php echo $id ?>">Order
+                                                        Received</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="updateStatus4.php?id=<?php echo $id ?>">Accept Refund
+                                                        Request</a>
+                                                </li>
                                             </ul>
                                         </div>
-                                        <a href="<?php echo SITEURL; ?>Staff_Page/cancelOrder.php?id=<?php echo $id; ?>" class="btn btn-danger">Cancel <br> Order</a>
+                                        <a href="<?php echo SITEURL; ?>Staff_Page/cancelOrder.php?id=<?php echo $id; ?>"
+                                            class="btn btn-danger">Cancel <br> Order</a>
                                     </div>
                                 </td>
                             </tr>
-            <?php
+                            <?php
                         }
                     } else {
                         // No orders found

@@ -4,7 +4,7 @@ include ('partials/navbar.php');
 // Retrieve the data from the previous file
 $eatOption = $_SESSION['eatOption'] ?? '';
 $paymentMethod = $_SESSION['paymentMethod'] ?? '';
-$address = 'LCK Restaurant';
+$address = 'Fotokopi';
 
 // Retrieve the address if the user chose the delivery option
 if ($eatOption === 'Delivery') {

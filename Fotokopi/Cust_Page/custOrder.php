@@ -1,5 +1,5 @@
 <?php
-include ('partials/navbar.php');
+include('partials/navbar.php');
 
 // Check if custID is provided in the URL
 // get the id
@@ -53,6 +53,7 @@ if ($res == true) {
             <th class="text-center">Date</th>
             <th class="text-center">Eat Option</th>
             <th class="text-center">Payment Method</th>
+            <th class="text-center">Grand Total</th>
             <th class="text-center">Status</th>
             <th class="text-center">Actions</th> <!-- Updated here -->
         </thead>
@@ -80,10 +81,27 @@ if ($res == true) {
 
                         // Determine if action buttons should be hidden
                         $hideActions = false;
+                        $hideActions2 = false;
+                        $hideActions3 = false;
 
-                        if ($orderStatus == "Order Received" || $orderStatus == "Order Cancelled") {
+
+                        if ($orderStatus == "Order Received" || $orderStatus == "Order Cancelled" || $orderStatus == "Refund Requested") {
                             $hideActions = true;
                         }
+                        if ($hideActions == true) {
+                            $hideActions2 = true;
+                        }
+
+                        if ($orderStatus == "Refund Requested") {
+                            $hideActions2 = false;
+                            $hideActions3 = false;
+                        }
+
+                        if ($orderStatus == "Refund Request Accepted") {
+                            $hideActions = true;
+                            $hideActions2 = false;
+                        }
+
                         // Display
                         ?>
                         <tr>
@@ -92,6 +110,7 @@ if ($res == true) {
                             <td class="text-center"><?php echo $orderDate; ?></td>
                             <td class="text-center"><?php echo $eatOption; ?></td>
                             <td><?php echo $paymentMethod; ?></td>
+                            <td><?php echo $grandTotal; ?></td>
                             <td class="text-center">
                                 <?php
                                 $statusClass = ""; // Variable to store the Bootstrap class for status button color
@@ -109,6 +128,12 @@ if ($res == true) {
                                         break;
                                     case "Order Cancelled":
                                         $statusClass = "btn btn-danger"; // Red color for "Order Cancelled"
+                                        break;
+                                    case "Refund Requested":
+                                        $statusClass = "btn btn-warning"; // Red color for "Order Cancelled"
+                                        break;
+                                    case "Refund Request Accepted":
+                                        $statusClass = "btn btn-success"; // Red color for "Order Cancelled"
                                         break;
                                     default:
                                         $statusClass = "btn btn-secondary"; // Default color for other statuses
@@ -128,6 +153,12 @@ if ($res == true) {
                                         <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal"
                                             data-bs-target="#cancelOrderModal<?php echo $orderID; ?>">Cancel<br>Order</button>
                                     <?php } ?>
+                                    <?php if ($hideActions2) { ?>
+                                        <!-- Button to Open the Modal -->
+                                        <button type="button" class="btn btn-dark me-2" data-bs-toggle="modal"
+                                            data-bs-target="#refundModal<?php echo $orderID; ?>">Request<br>Refund</button>
+                                    <?php } ?>
+
                                 </div>
                             </td>
                         </tr>
@@ -175,6 +206,27 @@ if ($res == true) {
                             </div>
                         </div>
 
+                        <!-- Refund Modal -->
+                        <div class="modal fade" id="refundModal<?php echo $orderID; ?>" tabindex="-1"
+                            aria-labelledby="refundModalLabel<?php echo $orderID; ?>" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="refundModalLabel<?php echo $orderID; ?>">Request Refund?</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to request refund for this order?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                        <a href="<?php echo SITEURL; ?>Cust_Page/requestRefund.php?id=<?php echo $id; ?>&orderID=<?php echo $orderID ?>"
+                                            class="btn btn-dark">Yes, Request Refund</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <?php
                     }
                 }
@@ -187,7 +239,7 @@ if ($res == true) {
 <br>
 <?php
 
-include ('partials/footer.php');
+include('partials/footer.php');
 ?>
 
 <script>

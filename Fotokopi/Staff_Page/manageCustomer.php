@@ -44,7 +44,6 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <a href="addCustomer.php" class="btn btn-dark text-light me-2">Add Customer</a>
                 <a href="manageCustomer.php" class="btn btn-dark">Reload Table</a>
             </div>
             <div>
