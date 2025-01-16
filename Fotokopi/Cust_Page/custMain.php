@@ -2,7 +2,7 @@
 include('partials/navbar.php');
 include('calculate.php');
 
-// Fetch top pick items based on cart count
+// Fetch top pick items based on cart count for modal
 $sql = "SELECT 
     menu.foodID, 
     menu.foodName, 
@@ -15,7 +15,25 @@ FROM
 INNER JOIN 
     menu ON cart.foodID = menu.foodID
 GROUP BY 
-    menu.foodID, menu.foodName
+    menu.foodID, menu.foodName, menu.foodDetails, menu.foodPrice, menu.menuPic
+ORDER BY 
+    total_quantity DESC
+LIMIT 1;";
+
+// Fetch top pick items based on cart count for AI
+$sql3 = "SELECT 
+    menu.foodID, 
+    menu.foodName, 
+    menu.foodDetails, 
+    menu.foodPrice, 
+    menu.menuPic,
+    SUM(cart.quantity) AS total_quantity
+FROM 
+    cart
+INNER JOIN 
+    menu ON cart.foodID = menu.foodID
+GROUP BY 
+    menu.foodID, menu.foodName, menu.foodDetails, menu.foodPrice, menu.menuPic
 ORDER BY 
     total_quantity DESC
 LIMIT 1;";
@@ -36,6 +54,9 @@ LIMIT 1;";
 
 $res = mysqli_query($conn, $sql);
 $res2 = mysqli_query($conn, $sql2);
+$res3 = mysqli_query($conn, $sql3);
+$topPick = mysqli_fetch_assoc($res3);
+echo "<script>var topPickItem = " . json_encode($topPick) . ";</script>";
 ?>
 
 <div>
@@ -94,6 +115,10 @@ $res2 = mysqli_query($conn, $sql2);
                             More Info
                         </button>
                     <?php } ?>
+                    <!-- AI Chatbot Suggestion -->
+                    <!-- <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#chatbotModal">
+                        AI Chatbot Suggestion
+                    </button> -->
                     <br>
                 </div>
             </div>
@@ -133,11 +158,14 @@ $res2 = mysqli_query($conn, $sql2);
                 <button class="btn1 rounded">
                     <a href="custProfile.php?id=<?php echo $id ?>" class="btn text-light">My Profile</a>
                 </button>
+                <!-- Button to open the chatbox -->
+                <button class="btn btn-dark rounded" id="chatbotBtn" onclick="openChatbot()">Chat with AI</button>
                 <br><br>
             </div>
         </div>
     </div>
 </div>
+<br>
 
 <?php
 if ($res && mysqli_num_rows($res) > 0) {
@@ -256,8 +284,27 @@ if ($res2 && mysqli_num_rows($res2) > 0) {
 ?>
 
 
-<br>
-<br>
+
+<!-- AI Chatbot Modal -->
+<div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chatbotModalLabel">AI Chatbot</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chatbot-messages"
+                    style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+                <div class="input-group mt-3">
+                    <input type="text" id="chatbot-input" class="form-control" placeholder="Ask me anything...">
+                    <button id="chatbot-send" class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php include('partials/footer.php'); ?>
 
 <script>
@@ -285,3 +332,67 @@ if ($res2 && mysqli_num_rows($res2) > 0) {
         });
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const chatbotMessages = document.getElementById("chatbot-messages");
+        const chatbotInput = document.getElementById("chatbot-input");
+        const chatbotSend = document.getElementById("chatbot-send");
+
+        chatbotSend.addEventListener("click", function () {
+            const userInput = chatbotInput.value;
+            if (userInput.trim() !== "") {
+                addMessage("You", userInput);
+                chatbotInput.value = "";
+
+                // Simulate chatbot response
+                setTimeout(() => {
+                    handleChatbotResponse(userInput);
+                }, 500);
+            }
+        });
+
+        chatbotInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                chatbotSend.click();
+            }
+        });
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("chatbot-message");
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatbotMessages.appendChild(messageElement);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function handleChatbotResponse(userInput) {
+            let response = "Sorry, I didn't understand that.";
+
+            if (userInput.toLowerCase().includes("how to use")) {
+                response = "To use this website, navigate through the menu, select items, and proceed to cart,select your order setup and confirm payment.";
+            } else if (userInput.toLowerCase().includes("top item suggestion") || userInput.toLowerCase().includes("suggest")) {
+                if (typeof topPickItem !== 'undefined' && topPickItem !== null) {
+                    response = `Our top item is ${topPickItem.foodName} - ${topPickItem.foodDetails}. It costs RM ${topPickItem.foodPrice}.`;
+                } else {
+                    response = "We currently have no top items to suggest.";
+                }
+            } else if (userInput.toLowerCase().includes("refund")) {
+                response = "For refunds, just click the refund button in order history and if already processing or received, you need to cancel it. Then you can click the refund button. REMINDER : 'Refund request only valid for 2 days.'";
+            }  else if (userInput.toLowerCase().includes("when")) {
+                response = "When your refund requested, the refund will be checked if it is valid or not. Once proven valid, it will be approved.";
+            }
+            addMessage("Chatbot", response);
+        }
+
+        window.openChatbot = function () {
+            var myModal = new bootstrap.Modal(document.getElementById('chatbotModal'), {
+                keyboard: false
+            });
+            myModal.show();
+        }
+    });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.0.0-beta3/js/bootstrap.min.js"></script>

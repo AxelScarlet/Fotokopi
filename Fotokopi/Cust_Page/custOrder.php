@@ -79,6 +79,15 @@ if ($res == true) {
                         $orderStatus = $rows['orderStatus'];
                         $grandTotal = $rows['grandTotal'];
 
+                        // Calculate the date difference
+                        $orderDateTime = new DateTime($orderDate);
+                        $currentDateTime = new DateTime();
+                        $interval = $currentDateTime->diff($orderDateTime);
+                        $daysDifference = $interval->days;
+
+                        // Determine if the refund button should be hidden
+                        $hideRefundButton = $daysDifference > 2;
+
                         // Determine if action buttons should be hidden
                         $hideActions = false;
                         $hideActions2 = false;
@@ -147,18 +156,15 @@ if ($res == true) {
                                     <a href="<?php echo SITEURL; ?>Cust_Page/viewCart.php?id=<?php echo $id; ?>&orderID=<?php echo $orderID ?>"
                                         class="btn btn-warning me-2">View<br>Cart</a>
                                     <?php if (!$hideActions) { ?>
-                                        <!-- Button to Open the Modal -->
                                         <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
                                             data-bs-target="#orderReceivedModal<?php echo $orderID; ?>">Order<br>Received</button>
                                         <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal"
                                             data-bs-target="#cancelOrderModal<?php echo $orderID; ?>">Cancel<br>Order</button>
                                     <?php } ?>
-                                    <?php if ($hideActions2) { ?>
-                                        <!-- Button to Open the Modal -->
+                                    <?php if (!$hideRefundButton && $hideActions2) { ?>
                                         <button type="button" class="btn btn-dark me-2" data-bs-toggle="modal"
                                             data-bs-target="#refundModal<?php echo $orderID; ?>">Request<br>Refund</button>
                                     <?php } ?>
-
                                 </div>
                             </td>
                         </tr>
